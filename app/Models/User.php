@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // Importaciones necesarias para Sanctum y Spatie
+use Illuminate\Database\Eloquent\Casts\Attribute; 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -53,4 +54,23 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaction::class);
     }
+
+    protected function balance(): Attribute
+    {
+        return Attribute::get(function () {
+            // Carga las transacciones del usuario.
+            // Suma los 'CREDIT' y resta los 'DEBIT'.
+            $credits = $this->transactions()
+                ->where('transaction_type', 'CREDIT')
+                ->sum('amount');
+
+            $debits = $this->transactions()
+                ->where('transaction_type', 'DEBIT')
+                ->sum('amount');
+
+            return $credits - $debits;
+        });
+    }
+
+    protected $appends = ['balance'];
 }
