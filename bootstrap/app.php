@@ -11,17 +11,23 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+    ->withMiddleware(function (Middleware $middleware) {
+        // Añade el alias para el middleware de roles de Spatie
+        $middleware->alias([
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            // Mantén los otros alias que ya tenías, si los había
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, 
+        ]);
+        
+        // Asegúrate de que el grupo 'api' se mantenga como estaba, con Sanctum.
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
-        $middleware->alias([
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-        ]);
-
-        //
+        // Si usaste Breeze, el middleware de Sanctum para API debería estar aquí por defecto,
+        // pero asegúrate de que el grupo 'api' tenga 'auth:sanctum' si lo necesitas en rutas.
+        
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
