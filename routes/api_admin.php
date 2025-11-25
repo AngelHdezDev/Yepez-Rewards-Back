@@ -1,27 +1,42 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\TransactionController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
-| Rutas de la API de Administración (Admin Routes)
+| Rutas de Administración (Role: yepez)
 |--------------------------------------------------------------------------
 |
-| Estas rutas son accesibles SOLO por usuarios autenticados con el rol 'admin'.
-| Requieren un Token Sanctum.
+| Estas rutas están destinadas a Yepez Central y son las de más alto nivel.
 |
 */
 
-// Middleware: 
-// 1. 'auth:sanctum': Requiere que el usuario esté autenticado con un token de Sanctum.
-// 2. 'role:admin': Requiere que el usuario autenticado tenga el rol 'admin'.
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+// Agrupamos por autenticación y el rol 'yepez'
+Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
 
-    // POST /api/transactions
-    // Ruta para crear nuevas transacciones (asignación de puntos)
-    Route::post('/transactions', [TransactionController::class, 'store'])
-        ->name('admin.transactions.store');
+    // --- Rutas que requieren el permiso 'manage rewards' ---
+    Route::middleware('permission:manage rewards')->prefix('rewards')->group(function () {
+        
+        // GET /api/yepez/rewards
+        Route::get('/', function (Request $request) {
+            return response()->json([
+                'message' => 'Yepez: Listar y gestionar recompensas.',
+                'user_id' => $request->user()->id,
+            ]);
+        })->name('yepez.rewards.index');
 
-    // Aquí irían otras rutas de administración
-}); 
+        // POST /api/yepez/rewards
+        Route::post('/', function (Request $request) {
+            return response()->json(['message' => 'Yepez: Crear Recompensa.']);
+        })->name('yepez.rewards.store');
+    });
+
+    // --- Otras rutas del Admin que solo requieren el rol ---
+    Route::get('/dashboard', function (Request $request) {
+        return response()->json([
+            'message' => 'Bienvenido al Dashboard de Yepez Central.',
+        ]);
+    })->name('yepez.dashboard');
+
+});

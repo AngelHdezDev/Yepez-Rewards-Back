@@ -61,11 +61,11 @@ class User extends Authenticatable
             // Carga las transacciones del usuario.
             // Suma los 'CREDIT' y resta los 'DEBIT'.
             $credits = $this->transactions()
-                ->where('transaction_type', 'CREDIT')
+                ->where('type', 'CREDIT')
                 ->sum('amount');
 
             $debits = $this->transactions()
-                ->where('transaction_type', 'DEBIT')
+                ->where('type', 'DEBIT')
                 ->sum('amount');
 
             return $credits - $debits;

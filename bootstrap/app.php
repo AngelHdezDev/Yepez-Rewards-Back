@@ -12,10 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // ✅ AÑADE ESTA LÍNEA: Excluir rutas API del CSRF
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+            'sanctum/csrf-cookie',
+            'login',
+            'logout'
+        ]);
+        
         // Añade el alias para el middleware de roles de Spatie
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            // Mantén los otros alias que ya tenías, si los había
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class, 
         ]);
         
@@ -23,10 +30,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
-
-        // Si usaste Breeze, el middleware de Sanctum para API debería estar aquí por defecto,
-        // pero asegúrate de que el grupo 'api' tenga 'auth:sanctum' si lo necesitas en rutas.
-        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
