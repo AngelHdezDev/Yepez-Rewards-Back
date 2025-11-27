@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Sucursal\TicketController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -12,23 +13,29 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
-    
-    // GET /api/sucursal/points/check
-    // Requiere el permiso 'check points'
-    Route::get('/points/check', function (Request $request) {
-        return response()->json([
-            'message' => 'Sucursal: Consultar Puntos de Cliente. (Permiso: check points)',
-            'user_id' => $request->user()->id,
-        ]);
-    })->middleware('permission:check points');
 
-    // POST /api/sucursal/reward/redeem
-    // Requiere el permiso 'redeem reward'
-    Route::post('/reward/redeem', function (Request $request) {
-        return response()->json([
-            'message' => 'Sucursal: Ejecutar Canje de Recompensa. (Permiso: redeem reward)',
-            'user_id' => $request->user()->id,
-        ]);
-    })->middleware('permission:redeem reward');
+Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
+
+
+        Route::post('tickets', [TicketController::class, 'store'])
+            ->name('sucursal.tickets.store');
+            
+
+    // // GET /api/sucursal/points/check
+    // // Requiere el permiso 'check points'
+    // Route::get('/points/check', function (Request $request) {
+    //     return response()->json([
+    //         'message' => 'Sucursal: Consultar Puntos de Cliente. (Permiso: check points)',
+    //         'user_id' => $request->user()->id,
+    //     ]);
+    // })->middleware('permission:check points');
+
+    // // POST /api/sucursal/reward/redeem
+    // // Requiere el permiso 'redeem reward'
+    // Route::post('/reward/redeem', function (Request $request) {
+    //     return response()->json([
+    //         'message' => 'Sucursal: Ejecutar Canje de Recompensa. (Permiso: redeem reward)',
+    //         'user_id' => $request->user()->id,
+    //     ]);
+    // })->middleware('permission:redeem reward');
 });

@@ -2,30 +2,35 @@
 
 namespace App\Models;
 
-// Importaciones necesarias para Sanctum y Spatie
-use Illuminate\Database\Eloquent\Casts\Attribute; 
+// Importaciones necesarias
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // <-- ESTA LÍNEA ES CRÍTICA PARA EL ERROR
-use Spatie\Permission\Traits\HasRoles; // <-- Necesario para el Módulo 1 (Roles)
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Transaction;
+use Illuminate\Database\Eloquent\Casts\Attribute; // Para el Accessor/Mutator
 
-class User extends Authenticatable
+// Importamos los nuevos modelos para las relaciones
+use App\Models\Transaction;
+use App\Models\Ticket;
+
+
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles; // <-- DEBE ESTAR AQUÍ
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>  
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'current_balance', // <-- Agregado para el campo de puntos
     ];
 
     /**
@@ -40,37 +45,52 @@ class User extends Authenticatable
 
     /**
      * The attributes that should be cast.
+     * * ¡CORREGIDO! SE ELIMINA LA DECLARACIÓN EXPLÍCITA DE TIPO (array) 
+     * para evitar el error: "Type of App\Models\User::$casts must not be defined"
      *
      * @var array<string, string>
      */
-    protected $casts = [
+    protected $casts = [ // <-- ¡SIN el "array" antes de $casts!
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'current_balance' => 'integer',
     ];
 
 
+    // ===============================================
+    // RELACIONES
+    // ===============================================
+
+    /**
+     * Obtiene todas las transacciones de puntos del usuario (CREDIT/DEBIT).
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
     }
-
-    protected function balance(): Attribute
+    
+    /**
+     * Obtiene todos los tickets de compra registrados por la sucursal (si este User es una sucursal).
+     */
+    public function registeredTickets(): HasMany
     {
-        return Attribute::get(function () {
-            // Carga las transacciones del usuario.
-            // Suma los 'CREDIT' y resta los 'DEBIT'.
-            $credits = $this->transactions()
-                ->where('type', 'CREDIT')
-                ->sum('amount');
-
-            $debits = $this->transactions()
-                ->where('type', 'DEBIT')
-                ->sum('amount');
-
-            return $credits - $debits;
-        });
+        // La llave foránea es branch_id
+        return $this->hasMany(Ticket::class, 'branch_id');
     }
 
-    protected $appends = ['balance'];
+    // ===============================================
+    // ACCESORES
+    // ===============================================
+
+    /**
+     * Accessor para el saldo de puntos (current_balance).
+     * Usamos Attribute::make para Laravel 10/11.
+     * Esto expone $user->balance
+     */
+    protected function balance(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, $attributes) => (int) $attributes['current_balance'],
+            set: fn ($value) => (int) $value,
+        );
+    }
 }

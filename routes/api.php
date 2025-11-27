@@ -17,7 +17,9 @@ use Illuminate\Support\Facades\Route;
 require __DIR__.'/api_auth.php'; 
 require __DIR__ . '/api_admin.php';
 require __DIR__ . '/api_clientes.php';
-require __DIR__ . '/api_sucursal.php';
+Route::prefix('sucursal')->group(function () {
+    require __DIR__ . '/api_sucursal.php';
+});
 
 // Puedes agregar otras rutas de tu aplicación debajo de este require.
 // Ejemplo:
