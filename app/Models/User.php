@@ -67,7 +67,28 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Transaction::class);
     }
-    
+
+    protected function currentPoints(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->transactions()
+                ->where('status', 'COMPLETED') // Solo transacciones completadas
+                ->sum(DB::raw('CASE 
+                                  WHEN type = "CREDIT" THEN amount 
+                                  WHEN type = "DEBIT" THEN -amount 
+                                  ELSE 0 
+                              END')),
+        )->shouldCache(); // Recomiendo usar shouldCache() para evitar calcular el saldo en cada petición
+    }
+
+    /**
+     * Relación con los canjes de premios realizados por el usuario.
+     */
+    public function redemptions()
+    {
+        return $this->hasMany(Redemption::class);
+    }
+
     /**
      * Obtiene todos los tickets de compra registrados por la sucursal (si este User es una sucursal).
      */
@@ -89,8 +110,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function balance(): Attribute
     {
         return Attribute::make(
-            get: fn ($value, $attributes) => (int) $attributes['current_balance'],
-            set: fn ($value) => (int) $value,
+            get: fn($value, $attributes) => (int) $attributes['current_balance'],
+            set: fn($value) => (int) $value,
         );
     }
 }

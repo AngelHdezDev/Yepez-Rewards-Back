@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Sucursal\TicketController;
+use App\Http\Controllers\Sucursal\TransactionController; 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -17,9 +18,13 @@ use Illuminate\Http\Request;
 Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
 
 
-        Route::post('tickets', [TicketController::class, 'store'])
-            ->name('sucursal.tickets.store');
-            
+    Route::post('tickets', [TicketController::class, 'store'])
+        ->name('sucursal.tickets.store');
+
+
+    Route::post('redeem', [TransactionController::class, 'redeemReward'])
+        ->name('sucursal.rewards.redeem');
+
 
     // // GET /api/sucursal/points/check
     // // Requiere el permiso 'check points'

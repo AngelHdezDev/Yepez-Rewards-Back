@@ -10,22 +10,21 @@ class Redemption extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    // Asume que la tabla se llama 'redemptions'
     protected $fillable = [
-        'user_id',
+        'user_id', 
         'reward_id',
-        'reward_name',
         'points_cost',
+        'reward_name', // <<< ¡ESTE ES EL CAMPO QUE FALTABA!
         'redemption_code',
-        'status',
+        'redeemed_at',
+        // 'branch_id', // Si usas branch_id
     ];
-
+    
     /**
-     * El usuario que realizó el canje.
+     * Define la relación: Un canje pertenece a un cliente (User).
+     *
+     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -33,7 +32,9 @@ class Redemption extends Model
     }
 
     /**
-     * El premio que fue canjeado.
+     * Define la relación: Un canje pertenece a un premio (Reward).
+     *
+     * @return BelongsTo
      */
     public function reward(): BelongsTo
     {
