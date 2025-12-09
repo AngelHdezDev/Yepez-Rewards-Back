@@ -1,7 +1,8 @@
 <?php
 
 use App\Http\Controllers\Sucursal\TicketController;
-use App\Http\Controllers\Sucursal\TransactionController; 
+use App\Http\Controllers\Sucursal\TransactionController;
+use App\Http\Controllers\Sucursal\ClientController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,9 @@ use Illuminate\Http\Request;
 
 Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
 
+    // --- Rutas de Clientes ---
+    Route::post('clients', [ClientController::class, 'store']) 
+        ->name('sucursal.clients.store');
 
     Route::post('tickets', [TicketController::class, 'store'])
         ->name('sucursal.tickets.store');
