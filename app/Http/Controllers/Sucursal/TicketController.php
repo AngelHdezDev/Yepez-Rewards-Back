@@ -7,9 +7,42 @@ use App\Http\Requests\Sucursal\StoreTicketRequest; // Usamos el request actualiz
 use App\Jobs\ProcessTicketJob;
 use App\Models\Ticket;
 use Illuminate\Http\JsonResponse;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 class TicketController extends Controller
 {
+
+    public function index(Request $request): JsonResponse
+    {
+        // 1. OBTENER EL ID DE LA SUCURSAL AUTENTICADA (user_id)
+        $branchId = Auth::id();
+
+        if (!$branchId) {
+            return response()->json([
+                'message' => 'Unauthorized: Authentication required.'
+            ], 401);
+        }
+
+        try {
+            $sucursalTickets = Ticket::where('user_id', $branchId)
+                ->orderBy('created_at', 'desc')
+                ->take(10   )
+                ->get();
+
+            return response()->json([
+                'message' => 'Tickets recuperados exitosamente.',
+                'branchId' => $branchId,
+                'tickets' => $sucursalTickets,
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Manejo de errores de base de datos o consulta
+            return response()->json([
+                'message' => 'Error interno del servidor: No se pudieron recuperar los tickets.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     public function store(StoreTicketRequest $request): JsonResponse
     {
         $ticketData = $request->validated();
@@ -31,7 +64,8 @@ class TicketController extends Controller
         ProcessTicketJob::dispatch($ticketData);
 
         return response()->json([
-            'message' => 'Ticket recibido y puesto en cola para procesamiento. Los puntos se acreditarán en breve.', $exists,
+            'message' => 'Ticket recibido y puesto en cola para procesamiento. Los puntos se acreditarán en breve.',
+            $exists,
             'ticket_number' => $ticketData['ticket_number'],
             'user_id' => $ticketData['user_id'],
         ], 202);

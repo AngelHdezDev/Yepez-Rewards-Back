@@ -3,6 +3,7 @@
 use App\Http\Controllers\Sucursal\TicketController;
 use App\Http\Controllers\Sucursal\TransactionController;
 use App\Http\Controllers\Sucursal\ClientController;
+use App\Http\Controllers\Sucursal\RewardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -19,15 +20,21 @@ use Illuminate\Http\Request;
 Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
 
     // --- Rutas de Clientes ---
-    Route::post('clients', [ClientController::class, 'store']) 
+    Route::post('clients', [ClientController::class, 'store'])
         ->name('sucursal.clients.store');
 
     Route::post('tickets', [TicketController::class, 'store'])
         ->name('sucursal.tickets.store');
 
+    Route::get('tickets/get', [TicketController::class, 'index'])
+        ->name('sucursal.tickets.index');   
+
 
     Route::post('redeem', [TransactionController::class, 'redeemReward'])
         ->name('sucursal.rewards.redeem');
+
+    Route::get('rewards/getTopRewards', [RewardController::class, 'getTopRewards'])
+        ->name('sucursal.rewards.getTopRewards');
 
 
     // // GET /api/sucursal/points/check
