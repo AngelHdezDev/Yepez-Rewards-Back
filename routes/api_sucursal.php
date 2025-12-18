@@ -23,18 +23,24 @@ Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
     Route::post('clients', [ClientController::class, 'store'])
         ->name('sucursal.clients.store');
 
+    // --- Rutas de Tickets ---
     Route::post('tickets', [TicketController::class, 'store'])
         ->name('sucursal.tickets.store');
 
-    Route::get('tickets/get', [TicketController::class, 'index'])
-        ->name('sucursal.tickets.index');   
+    // Últimos 10 tickets de la sucursal autenticada
+    Route::get('tickets/lastTickets', [TicketController::class, 'lastTickets'])
+        ->name('sucursal.tickets.lastTickets');   
 
-
+    // Canje de recompensas por puntos
     Route::post('redeem', [TransactionController::class, 'redeemReward'])
         ->name('sucursal.rewards.redeem');
 
+    // Obtener las 10 mejores recompensas
     Route::get('rewards/getTopRewards', [RewardController::class, 'getTopRewards'])
         ->name('sucursal.rewards.getTopRewards');
+
+    Route::get('transactions/lastTransactions', [TransactionController::class, 'lastTransactions'])
+        ->name('sucursal.transactions.lastTransactions');
 
 
     // // GET /api/sucursal/points/check

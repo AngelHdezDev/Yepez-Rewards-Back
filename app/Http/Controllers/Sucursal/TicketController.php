@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class TicketController extends Controller
 {
 
-    public function index(Request $request): JsonResponse
+    public function lastTickets(Request $request): JsonResponse
     {
         // 1. OBTENER EL ID DE LA SUCURSAL AUTENTICADA (user_id)
         $branchId = Auth::id();
@@ -26,7 +26,7 @@ class TicketController extends Controller
         try {
             $sucursalTickets = Ticket::where('user_id', $branchId)
                 ->orderBy('created_at', 'desc')
-                ->take(10   )
+                ->take(10)
                 ->get();
 
             return response()->json([
