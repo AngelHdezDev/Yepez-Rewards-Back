@@ -178,7 +178,37 @@ class TransactionController extends Controller
             ], 500);
         }
     }
-        
+
+    public function countCanjes()
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthorized: Authentication required.'
+            ], 401);
+        }
+
+        try {
+            $canjeCount = Transaction::where('user_id', $userId)
+                ->where('type', 'DEBIT')
+                ->count();
+
+
+            return response()->json([
+                'message' => 'Conteo de canjes recuperado exitosamente.',
+                'userId' => $userId,
+                'canje_count' => $canjeCount,
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Manejo de errores de base de datos o consulta
+            return response()->json([
+                'message' => 'Error interno del servidor: No se pudo contar los canjes.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
 
 
