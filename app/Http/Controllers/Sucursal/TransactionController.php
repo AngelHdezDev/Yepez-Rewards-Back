@@ -151,6 +151,34 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+    public function countTransactions()
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthorized: Authentication required.'
+            ], 401);
+        }
+
+        try {
+            $transactionCount = Transaction::where('user_id', $userId)->count();
+
+            return response()->json([
+                'message' => 'Conteo de transacciones recuperado exitosamente.',
+                'userId' => $userId,
+                'transaction_count' => $transactionCount,
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Manejo de errores de base de datos o consulta
+            return response()->json([
+                'message' => 'Error interno del servidor: No se pudo contar las transacciones.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+        
 }
 
 

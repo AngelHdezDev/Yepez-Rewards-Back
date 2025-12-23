@@ -42,6 +42,9 @@ Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
     Route::get('transactions/lastTransactions', [TransactionController::class, 'lastTransactions'])
         ->name('sucursal.transactions.lastTransactions');
 
+    Route::get('transactions/countTransactions', [TransactionController::class, 'countTransactions'])
+        ->name('sucursal.transactions.countTransactions');
+
 
     // // GET /api/sucursal/points/check
     // // Requiere el permiso 'check points'
