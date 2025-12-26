@@ -101,7 +101,7 @@ class TransactionController extends Controller
 
             // 9. Retornar respuesta
             return response()->json([
-                'message' => '¡Canje de premio completado con éxito! Muestre este código al cliente.',
+                'message' => '¡Canje de premio completado con éxito!',
                 'premio_canjeado' => $premio->name,
                 // Usamos 'fresh()' aquí para obtener los valores más recientes del modelo para la respuesta
                 'puntos_restantes' => $cliente->fresh()->current_balance,

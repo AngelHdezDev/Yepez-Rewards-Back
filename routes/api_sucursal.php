@@ -40,6 +40,7 @@ Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
     Route::get('rewards/getTopRewards', [RewardController::class, 'getTopRewards'])
         ->name('sucursal.rewards.getTopRewards');
 
+    //Obtener las últimas 10 transacciones de la sucursal autenticada
     Route::get('transactions/lastTransactions', [TransactionController::class, 'lastTransactions'])
         ->name('sucursal.transactions.lastTransactions');
 
@@ -49,12 +50,17 @@ Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
         ->name('sucursal.transactions.countTransactions');
 
     // Contar canjes realizados
-
     Route::get('transactions/countCanjes', [TransactionController::class, 'countCanjes'])
         ->name('sucursal.transactions.countCanjes');
 
+    // Obtener capacidad de recompensas para el usuario 
     Route::get('users/purchaseCapacity', [UserController::class, 'getPurchaseCapacity'])
         ->name('sucursal.users.purchaseCapacity');
+
+    // Obtener todas las recompensas    
+
+    Route::get('rewards/allRewards', [RewardController::class, 'getAllRewards'])
+        ->name('sucursal.rewards.getAllRewards');
     // // GET /api/sucursal/points/check
     // // Requiere el permiso 'check points'
     // Route::get('/points/check', function (Request $request) {
