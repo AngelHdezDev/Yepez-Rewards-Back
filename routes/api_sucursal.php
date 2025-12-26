@@ -61,6 +61,13 @@ Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
 
     Route::get('rewards/allRewards', [RewardController::class, 'getAllRewards'])
         ->name('sucursal.rewards.getAllRewards');
+
+    // Obtener el total de tickets por usuario (sucursal)
+    Route::get('tickets/getTotalTicket', [TicketController::class, 'getTotalTicketsByUser'])
+        ->name('sucursal.rewards.getTotalTicketsByUser');
+
+    Route::get('tickets/getAllTicketsByUser', [TicketController::class, 'getAllTicketsByUser'])
+        ->name('sucursal.rewards.getAllTicketsByUser');
     // // GET /api/sucursal/points/check
     // // Requiere el permiso 'check points'
     // Route::get('/points/check', function (Request $request) {

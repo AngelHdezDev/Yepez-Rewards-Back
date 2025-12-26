@@ -9,6 +9,9 @@ use App\Models\Ticket;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 class TicketController extends Controller
 {
 
@@ -69,5 +72,86 @@ class TicketController extends Controller
             'ticket_number' => $ticketData['ticket_number'],
             'user_id' => $ticketData['user_id'],
         ], 202);
+    }
+
+    public function getTotalTicketsByUser(): JsonResponse
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthorized: Authentication required.'
+            ], 401);
+        }
+        try {
+            // Opción 1: Eloquent (Recomendado por legibilidad)
+            $totalTickets = Ticket::where('user_id', $userId)->count();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Conteo de tickets realizado con éxito',
+                'data' => [
+                    'user_id' => (int) $userId,
+                    'total_facturas' => $totalTickets
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error("Error al contar tickets del usuario {$userId}: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el total de facturas',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getAllTicketsByUser(): JsonResponse
+    {
+        // Obtenemos el ID del usuario autenticado mediante el token de la petición
+        $userId = Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: Authentication required.'
+            ], 401);
+        }
+
+        try {
+            // 1. Consultamos los tickets filtrando por usuario
+            // 2. Ordenamos por fecha de creación (opcional, pero recomendado)
+            // 3. Aplicamos paginación de 5 en 5
+            $paginatedTickets = Ticket::where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->paginate(5);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tickets recuperados con éxito',
+                'data' => [
+                    'user_id' => (int) $userId,
+                    'total_facturas' => $paginatedTickets->total(), // Total global de tickets
+                    'tickets' => $paginatedTickets->items(),       // Los 5 tickets de la página actual
+                ],
+                // Información útil para el frontend (links y metas)
+                'pagination' => [
+                    'current_page' => $paginatedTickets->currentPage(),
+                    'last_page' => $paginatedTickets->lastPage(),
+                    'per_page' => $paginatedTickets->perPage(),
+                    'next_page' => $paginatedTickets->nextPageUrl(),
+                    'prev_page' => $paginatedTickets->previousPageUrl(),
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error("Error al obtener tickets del usuario {$userId}: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el listado de facturas',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
