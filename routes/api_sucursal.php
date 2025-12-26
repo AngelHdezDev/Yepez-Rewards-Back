@@ -4,6 +4,7 @@ use App\Http\Controllers\Sucursal\TicketController;
 use App\Http\Controllers\Sucursal\TransactionController;
 use App\Http\Controllers\Sucursal\ClientController;
 use App\Http\Controllers\Sucursal\RewardController;
+use App\Http\Controllers\Sucursal\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -47,10 +48,13 @@ Route::middleware(['auth:sanctum', 'role:sucursal'])->group(function () {
     Route::get('transactions/countTransactions', [TransactionController::class, 'countTransactions'])
         ->name('sucursal.transactions.countTransactions');
 
+    // Contar canjes realizados
+
     Route::get('transactions/countCanjes', [TransactionController::class, 'countCanjes'])
         ->name('sucursal.transactions.countCanjes');
 
-
+    Route::get('users/purchaseCapacity', [UserController::class, 'getPurchaseCapacity'])
+        ->name('sucursal.users.purchaseCapacity');
     // // GET /api/sucursal/points/check
     // // Requiere el permiso 'check points'
     // Route::get('/points/check', function (Request $request) {

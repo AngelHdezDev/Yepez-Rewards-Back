@@ -41,4 +41,26 @@ class RewardController extends Controller
             ], 500);
         }
     }
+
+    public function countAwardAvailable(): JsonResponse
+    {
+        try {
+            $count = Reward::where('available', true)->count();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Conteo de recompensas disponibles recuperado exitosamente',
+                'data' => ['available_rewards_count' => $count]
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error("Error al contar recompensas disponibles: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al contar las recompensas disponibles',
+                'error' => $e->getMessage() 
+            ], 500);
+        }
+    }
 }
