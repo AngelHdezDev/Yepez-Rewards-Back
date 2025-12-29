@@ -108,7 +108,6 @@ class TicketController extends Controller
 
     public function getAllTicketsByUser(): JsonResponse
     {
-        // Obtenemos el ID del usuario autenticado mediante el token de la petición
         $userId = Auth::id();
 
         if (!$userId) {
@@ -119,12 +118,9 @@ class TicketController extends Controller
         }
 
         try {
-            // 1. Consultamos los tickets filtrando por usuario
-            // 2. Ordenamos por fecha de creación (opcional, pero recomendado)
-            // 3. Aplicamos paginación de 5 en 5
             $paginatedTickets = Ticket::where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
-                ->paginate(5);
+                ->paginate(10);
 
             return response()->json([
                 'success' => true,
@@ -134,7 +130,6 @@ class TicketController extends Controller
                     'total_facturas' => $paginatedTickets->total(), // Total global de tickets
                     'tickets' => $paginatedTickets->items(),       // Los 5 tickets de la página actual
                 ],
-                // Información útil para el frontend (links y metas)
                 'pagination' => [
                     'current_page' => $paginatedTickets->currentPage(),
                     'last_page' => $paginatedTickets->lastPage(),

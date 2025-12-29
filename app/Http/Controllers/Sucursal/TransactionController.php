@@ -209,6 +209,77 @@ class TransactionController extends Controller
         }
     }
 
+    public function getTotalCanjesByUser()
+    {
+        $userId = Auth::id();
+        if (!$userId) {
+            return response()->json([
+                'message' => 'Unauthorized: Authentication required.'
+            ], 401);
+        }
+
+        try {
+            $canjeCount = Transaction::where('user_id', $userId)
+                ->count();
+
+
+            return response()->json([
+                'message' => 'Conteo de canjes recuperado exitosamente.',
+                'userId' => $userId,
+                'canje_count' => $canjeCount,
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Manejo de errores de base de datos o consulta
+            return response()->json([
+                'message' => 'Error interno del servidor: No se pudo contar los canjes.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTotalTransacitonsByUser(): JsonResponse
+    {
+        $userId = Auth::id();
+
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: Authentication required.'
+            ], 401);
+        }
+
+        try {
+            $paginatedTransactions = Transaction::where('user_id', $userId)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transacciones recuperadas exitosamente.',
+                'data' => [
+                    'userId' => $userId,
+                    'transactions' => $paginatedTransactions->items(),
+                ],
+                'pagination' => [
+                    'total' => $paginatedTransactions->total(),
+                    'current_page' => $paginatedTransactions->currentPage(),
+                    'last_page' => $paginatedTransactions->lastPage(),
+                    'per_page' => $paginatedTransactions->perPage(),
+                    'next_page' => $paginatedTransactions->nextPageUrl(),
+                    'prev_page' => $paginatedTransactions->previousPageUrl(),
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor: No se pudieron recuperar las transacciones.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
 
 
