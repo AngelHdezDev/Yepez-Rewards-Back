@@ -15,8 +15,12 @@ use Illuminate\Support\Facades\Route;
 
 // Incluimos nuestras rutas de autenticación de API, que contienen /register, /login, /user y /logout.
 require __DIR__.'/api_auth.php'; 
-require __DIR__ . '/api_admin.php';
 require __DIR__ . '/api_clientes.php';
+
+Route::prefix('admin')->group(function () {
+    require __DIR__ . '/api_admin.php';
+});
+
 Route::prefix('sucursal')->group(function () {
     require __DIR__ . '/api_sucursal.php'; 
 });

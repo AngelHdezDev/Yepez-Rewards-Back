@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log; // Para manejar errores
+use Illuminate\Http\Request;
 
 /**
  * Controlador para la administración de usuarios (CRUD) por parte del Administrador.
@@ -28,7 +29,7 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 // Aseguramos que la contraseña se hashee antes de guardarse
-                'password' => Hash::make($request->password), 
+                'password' => Hash::make($request->password),
                 'balance' => 0, // Inicializar el balance a 0 para nuevos usuarios
             ]);
 
@@ -50,6 +51,39 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'Error interno al crear el usuario. Por favor, intente de nuevo.',
+            ], 500);
+        }
+    }
+
+    public function getAllSucursales(Request $request): JsonResponse
+    {
+        try {
+            
+
+            $users = User::with('roles')
+                ->whereHas('roles', function ($q) {
+                    $q->where('name', 'sucursal');
+                })
+                ->paginate(10);
+
+            return response()->json([
+                'message' => 'Usuarios recuperados exitosamente.',
+                'data' => $users->items(), 
+                'pagination' => [
+                    'total' => $users->total(),
+                    'current_page' => $users->currentPage(),
+                    'per_page' => $users->perPage(),
+                    'last_page' => $users->lastPage(),
+                    'from' => $users->firstItem(),
+                    'to' => $users->lastItem()
+                ],
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Error al recuperar usuarios por Admin: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error interno al recuperar los usuarios. Por favor, intente de nuevo.',
             ], 500);
         }
     }

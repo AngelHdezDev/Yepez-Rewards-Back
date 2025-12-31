@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Admin\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,5 +39,8 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
             'message' => 'Bienvenido al Dashboard de Yepez Central.',
         ]);
     })->name('yepez.dashboard');
+
+    Route::get('users/getAllSucursales',[UserController::class, 'getAllSucursales'])
+    ->name('yepez.users.getAllSucursales');
 
 });
