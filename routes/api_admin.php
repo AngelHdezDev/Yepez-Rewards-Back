@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\RewardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,32 +16,17 @@ use App\Http\Controllers\Admin\UserController;
 
 // Agrupamos por autenticación y el rol 'yepez'
 Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
+    
+    // Ruta para obtener todas las sucursales
 
-    // --- Rutas que requieren el permiso 'manage rewards' ---
-    Route::middleware('permission:manage rewards')->prefix('rewards')->group(function () {
-        
-        // GET /api/yepez/rewards
-        Route::get('/', function (Request $request) {
-            return response()->json([
-                'message' => 'Yepez: Listar y gestionar recompensas.',
-                'user_id' => $request->user()->id,
-            ]);
-        })->name('yepez.rewards.index');
+    Route::get('users/getAllSucursales', [UserController::class, 'getAllSucursales'])
+        ->name('yepez.users.getAllSucursales');
 
-        // POST /api/yepez/rewards
-        Route::post('/', function (Request $request) {
-            return response()->json(['message' => 'Yepez: Crear Recompensa.']);
-        })->name('yepez.rewards.store');
-    });
+    // Ruta para agregar una nueva recompensa
 
-    // --- Otras rutas del Admin que solo requieren el rol ---
-    Route::get('/dashboard', function (Request $request) {
-        return response()->json([
-            'message' => 'Bienvenido al Dashboard de Yepez Central.',
-        ]);
-    })->name('yepez.dashboard');
+    Route::post('reward/addReward', [RewardController::class, 'addReward'])
+        ->name('yepez.rewards.addReward');
 
-    Route::get('users/getAllSucursales',[UserController::class, 'getAllSucursales'])
-    ->name('yepez.users.getAllSucursales');
+
 
 });
