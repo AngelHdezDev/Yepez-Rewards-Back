@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RewardController;
+use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\RedemptionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +29,13 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
     Route::post('reward/addReward', [RewardController::class, 'addReward'])
         ->name('yepez.rewards.addReward');
 
+    // Ruta para obtener transacciones con filtros
+
+    Route::get('transactions/getTransactions', [TransactionController::class, 'getTransactions'])
+        ->name('yepez.transactions.getTransactions');
+
+    Route::get('redemptions/getAllRedemptions', [RedemptionController::class, 'getAllRedemptions'])
+        ->name('yepez.redemptions.getAllRedemptions');
 
 
 });

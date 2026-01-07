@@ -8,6 +8,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
+use App\Models\Transaction;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
@@ -60,7 +63,7 @@ class TransactionController extends Controller
                     'user_id' => $userId,
                     'amount' => $amount,
                 ], 202); // Código 202 Accepted indica que la solicitud fue aceptada
-                        // para procesamiento, pero no se ha completado.
+            // para procesamiento, pero no se ha completado.
 
             case 'DEBIT':
                 // TODO: Implementar la lógica para DEBIT (retirar puntos),
@@ -70,6 +73,58 @@ class TransactionController extends Controller
 
             default:
                 return response()->json(['message' => 'Tipo de transacción no soportado.'], 400);
+        }
+    }
+
+
+    public function getTransactions(Request $request)
+    {
+        try {
+            // 1. Iniciamos el query builder
+             $query = Transaction::with(['User']);
+
+            // 2. Aplicamos filtros solo si están presentes en la URL
+            // Usamos whereDate para ignorar la hora y comparar solo Año-Mes-Día
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+
+            // 3. Ejecutamos la paginación
+            // latest() ordena de la más reciente a la más antigua
+            $transactions = $query->latest()
+                ->paginate(20)
+                ->withQueryString(); // CRUCIAL: Mantiene ?start_date=... en los links de la paginación
+
+            // 4. Retornamos la respuesta estructurada
+            return response()->json([
+                'status' => 'success',
+                'data' => $transactions->items(), // Los registros actuales
+                'pagination' => [
+                    'total' => $transactions->total(),
+                    'count' => $transactions->count(),
+                    'per_page' => $transactions->perPage(),
+                    'current_page' => $transactions->currentPage(),
+                    'last_page' => $transactions->lastPage(),
+                    'next_page_url' => $transactions->nextPageUrl(),
+                    'prev_page_url' => $transactions->previousPageUrl(),
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error("Error en getTransactions: " . $e->getMessage(), [
+                'request' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error al procesar la solicitud de transacciones.',
+                'debug' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
     }
 }
