@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\Redemption;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Admin\UpdateRedemptionStatusRequest;
 
 class RedemptionController extends Controller
 {
@@ -14,6 +17,10 @@ class RedemptionController extends Controller
     {
         try {
             $query = Redemption::with(['user']);
+
+            if ($request->filled('status') && $request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
 
             if ($request->filled('user_id')) {
                 $query->where('user_id', $request->user_id);
@@ -28,7 +35,7 @@ class RedemptionController extends Controller
             }
 
             $redemptions = $query->latest()
-                ->paginate(20)
+                ->paginate(10)
                 ->withQueryString();
 
             return response()->json([
@@ -46,12 +53,12 @@ class RedemptionController extends Controller
             ], 200);
 
         } catch (Exception $e) {
-            
+
             Log::error("Error en getAllRedemptions: " . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
 
-       
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Ocurrió un error al procesar la solicitud de redenciones.',
@@ -59,4 +66,45 @@ class RedemptionController extends Controller
             ], 500);
         }
     }
+
+        public function updateStatus(UpdateRedemptionStatusRequest $request, $id): JsonResponse
+        {
+            try {
+            
+                $validated = $request->validated();
+
+                
+                $redemption = Redemption::findOrFail($id);
+
+
+                $redemption->update([
+                    'status' => $validated['status'],
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Redención actualizada correctamente.',
+                    'data' => $redemption
+                ], 200);
+
+            } catch (ModelNotFoundException $e) {
+                
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No se encontró la redención con el ID proporcionado.',
+                    'error' => $e->getMessage()
+                ], 404);
+
+            } catch (Exception $e) {
+                
+                Log::error("Error actualizando redención ID {$id}: " . $e->getMessage());
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Ocurrió un error interno al procesar la solicitud.',
+                    'debug' => config('app.debug') ? $e->getMessage() : null
+                ], 500);
+            }
+        }
+
 }

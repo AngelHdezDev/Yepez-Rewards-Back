@@ -18,7 +18,7 @@ use App\Http\Controllers\Admin\RedemptionController;
 
 // Agrupamos por autenticación y el rol 'yepez'
 Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
-    
+
     // Ruta para obtener todas las sucursales
 
     Route::get('users/getAllSucursales', [UserController::class, 'getAllSucursales'])
@@ -34,8 +34,14 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
     Route::get('transactions/getTransactions', [TransactionController::class, 'getTransactions'])
         ->name('yepez.transactions.getTransactions');
 
+
+    // Ruta para obtener todas las redenciones con filtros y paginación
     Route::get('redemptions/getAllRedemptions', [RedemptionController::class, 'getAllRedemptions'])
         ->name('yepez.redemptions.getAllRedemptions');
+
+    // Ruta para actualizar el estado de una redención
+    Route::patch('redemptions/{id}/status', [RedemptionController::class, 'updateStatus'])
+        ->name('yepez.redemptions.updateStatus');
 
 
 });

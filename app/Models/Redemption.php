@@ -18,6 +18,7 @@ class Redemption extends Model
         'reward_name', // <<< ¡ESTE ES EL CAMPO QUE FALTABA!
         'redemption_code',
         'redeemed_at',
+        'status',
         // 'branch_id', // Si usas branch_id
     ];
     
