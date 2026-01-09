@@ -75,4 +75,33 @@ class RewardController extends Controller
             ], 500);
         }
     }
+
+    public function getAllRewards(Request $request)
+    {
+        try {
+            
+            $rewards = Reward::where('is_active', 1)
+                ->latest() 
+                ->paginate(10);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $rewards->items(),
+                'pagination' => [
+                    'total' => $rewards->total(),
+                    'current_page' => $rewards->currentPage(),
+                    'last_page' => $rewards->lastPage(),
+                    'per_page' => $rewards->perPage(),
+                    'next_page_url' => $rewards->nextPageUrl(),
+                    'prev_page_url' => $rewards->previousPageUrl(),
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error en el servidor',
+                'detalles' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

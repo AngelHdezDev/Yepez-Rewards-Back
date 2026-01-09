@@ -43,5 +43,9 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
     Route::patch('redemptions/{id}/status', [RedemptionController::class, 'updateStatus'])
         ->name('yepez.redemptions.updateStatus');
 
+    // Ruta para obtener todas las recompensas activas
+    Route::get('reward/getAllRewards', [RewardController::class, 'getAllRewards'])
+        ->name('yepez.rewards.getAllRewards');
+
 
 });
