@@ -47,5 +47,12 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
     Route::get('reward/getAllRewards', [RewardController::class, 'getAllRewards'])
         ->name('yepez.rewards.getAllRewards');
 
+    // Ruta para actualizar una recompensa existente
+    Route::put('reward/update/{id}', [RewardController::class, 'updateReward'])
+        ->name('yepez.rewards.updateReward');
+
+    Route::patch('reward/desactivate/{id}', [RewardController::class, 'desactivateReward'])
+        ->name('yepez.rewards.desactivateReward');
+
 
 });
