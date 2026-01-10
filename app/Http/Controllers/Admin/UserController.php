@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
+use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
@@ -58,7 +59,7 @@ class UserController extends Controller
     public function getAllSucursales(Request $request): JsonResponse
     {
         try {
-            
+
 
             $users = User::with('roles')
                 ->whereHas('roles', function ($q) {
@@ -68,7 +69,7 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'Usuarios recuperados exitosamente.',
-                'data' => $users->items(), 
+                'data' => $users->items(),
                 'pagination' => [
                     'total' => $users->total(),
                     'current_page' => $users->currentPage(),
@@ -84,6 +85,45 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'Error interno al recuperar los usuarios. Por favor, intente de nuevo.',
+            ], 500);
+        }
+    }
+
+    public function updateSucursal(UpdateUserRequest $request, $id)
+    {
+        // 1. Buscar el usuario
+        $user = User::findOrFail($id);
+
+        try {
+            // 2. Obtener los datos ya validados desde el Request
+            $validated = $request->validated();
+
+            // 3. Preparar datos para actualizar
+            $updateData = [
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+            ];
+
+            // 4. Solo actualizar la contraseña si se proporcionó una nueva
+            if (!empty($validated['password'])) {
+                $updateData['password'] = Hash::make($validated['password']);
+            }
+
+            $user->update($updateData);
+
+            return response()->json([
+                'message' => 'Sucursal actualizada exitosamente',
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar la sucursal',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

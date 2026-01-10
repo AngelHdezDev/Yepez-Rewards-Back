@@ -51,8 +51,15 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
     Route::put('reward/update/{id}', [RewardController::class, 'updateReward'])
         ->name('yepez.rewards.updateReward');
 
+    // Ruta para desactivar una recompensa
+
     Route::patch('reward/desactivate/{id}', [RewardController::class, 'desactivateReward'])
         ->name('yepez.rewards.desactivateReward');
+
+    // Ruta para actualizar la sucursal
+
+    Route::put('users/editSucursal/{id}', [UserController::class, 'updateSucursal'])
+        ->name('yepez.users.updateSucursal');
 
 
 });
