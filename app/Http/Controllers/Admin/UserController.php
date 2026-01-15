@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log; // Para manejar errores
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Exception;
 
 /**
  * Controlador para la administración de usuarios (CRUD) por parte del Administrador.
@@ -61,9 +63,14 @@ class UserController extends Controller
         try {
 
 
-            $users = User::with('roles')
-                ->whereHas('roles', function ($q) {
-                    $q->where('name', 'sucursal');
+            $users = User::with(['roles', 'branch'])
+                // Condición 1: Filtrar por el nombre del rol
+                ->whereHas('roles', function ($query) {
+                    $query->where('name', 'sucursal');
+                })
+                // Condición 2: Filtrar por el estado de la sucursal relacionada
+                ->whereHas('branch', function ($query) {
+                    $query->where('is_active', 1);
                 })
                 ->paginate(10);
 
@@ -124,6 +131,45 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Error al actualizar la sucursal',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getSucursalDetails($id): JsonResponse
+    {
+        try {
+            $user = User::with('branch')
+            -> where('branch_id', '!=', null)
+            ->findOrFail($id);
+
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Sucursal recuperada exitosamente',
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'puntos' => $user->current_balance,
+                    'date' => $user->created_at->toDateString(),
+                    'branch' => $user->branch,
+                ]
+            ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            Log::warning("Intento de acceder a sucursal inexistente. ID: {$id}");
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se encontró la sucursal solicitada.'
+            ], 404);
+
+        } catch (Exception $e) {
+            Log::error("Error al recuperar sucursal ID {$id}: " . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Ocurrió un error interno al recuperar los datos.'
             ], 500);
         }
     }

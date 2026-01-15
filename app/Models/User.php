@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute; // Para el Accessor/Mutator
 
 // Importamos los nuevos modelos para las relaciones
@@ -31,6 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'current_balance', // <-- Agregado para el campo de puntos
+        'branch_id',
     ];
 
     /**
@@ -96,6 +98,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         // La llave foránea es branch_id
         return $this->hasMany(Ticket::class, 'branch_id');
+    }
+
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     // ===============================================

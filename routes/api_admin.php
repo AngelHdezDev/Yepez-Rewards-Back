@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RewardController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\RedemptionController;
+use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\TicketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,5 +63,33 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
     Route::put('users/editSucursal/{id}', [UserController::class, 'updateSucursal'])
         ->name('yepez.users.updateSucursal');
 
+    // Ruta para cambiar el estado de una sucursal
+    Route::patch('branches/changeStatus/{id}', [BranchController::class, 'changeStatus'])
+        ->name('yepez.branches.changeStatus');
+
+    // Ruta para crear una nueva sucursal junto con su usuario de tipo de sucursal
+
+    Route::post('branches/store', [BranchController::class, 'store'])
+        ->name('yepez.branches.store');
+
+    // Ruta para actualizar una sucursal existente
+
+    Route::patch('branches/update/{id}', [BranchController::class, 'update'])
+        ->name('yepez.branches.update');    
+
+    // Ruta para obtener la sucursal asociada a una branch
+
+    Route::get('users/getSucursalDetails/{id}', [UserController::class, 'getSucursalDetails'])
+        ->name('yepez.users.getSucursalDetails');
+
+    // Ruta para obtener todos los tickets de una sucursal
+
+    Route::get('tickets/getAllTicketsByUser/{id}', [TicketController::class, 'getAllTicketsByUser'])
+        ->name('yepez.tickets.getAllTicketsByUser');
+
+    // Ruta para obtener las transacciones de la sucursal 
+
+    Route::get('transactions/getTotalTransacitonsByUser/{id}', [TransactionController::class, 'getTotalTransacitonsByUser'])
+        ->name('yepez.transactions.getTotalTransacitonsByUser');
 
 });

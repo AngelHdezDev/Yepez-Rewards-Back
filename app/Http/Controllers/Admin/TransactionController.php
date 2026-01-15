@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use App\Models\Transaction;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
@@ -81,7 +82,7 @@ class TransactionController extends Controller
     {
         try {
             // 1. Iniciamos el query builder
-             $query = Transaction::with(['User']);
+            $query = Transaction::with(['User']);
 
             // 2. Aplicamos filtros solo si están presentes en la URL
             // Usamos whereDate para ignorar la hora y comparar solo Año-Mes-Día
@@ -124,6 +125,41 @@ class TransactionController extends Controller
                 'status' => 'error',
                 'message' => 'Error al procesar la solicitud de transacciones.',
                 'debug' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    public function getTotalTransacitonsByUser($id): JsonResponse
+    {
+        
+
+        try {
+            $paginatedTransactions = Transaction::where('user_id', $id)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transacciones recuperadas exitosamente.',
+                'data' => [
+                    'userId' => $id,
+                    'transactions' => $paginatedTransactions->items(),
+                ],
+                'pagination' => [
+                    'total' => $paginatedTransactions->total(),
+                    'current_page' => $paginatedTransactions->currentPage(),
+                    'last_page' => $paginatedTransactions->lastPage(),
+                    'per_page' => $paginatedTransactions->perPage(),
+                    'next_page' => $paginatedTransactions->nextPageUrl(),
+                    'prev_page' => $paginatedTransactions->previousPageUrl(),
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor: No se pudieron recuperar las transacciones.',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
