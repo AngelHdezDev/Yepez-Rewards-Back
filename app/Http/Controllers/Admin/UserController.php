@@ -173,4 +173,23 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function getTotalSucursales(): JsonResponse
+    {
+        try {
+            $totalSucursales = User::whereNotNull('branch_id')->count();
+
+            return response()->json([
+                'message' => 'Total de sucursales recuperado exitosamente.',
+                'total_sucursales' => $totalSucursales,
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Error al recuperar el total de sucursales: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Error interno al recuperar el total de sucursales. Por favor, intente de nuevo.',
+            ], 500);
+        }
+    }
 }

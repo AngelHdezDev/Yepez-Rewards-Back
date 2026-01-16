@@ -12,9 +12,9 @@ use Exception;
 
 class TicketController extends Controller
 {
-     public function getAllTicketsByUser($id): JsonResponse
+    public function getAllTicketsByUser($id): JsonResponse
     {
-       
+
         try {
             $paginatedTickets = Ticket::where('user_id', $id)
                 ->orderBy('created_at', 'desc')
@@ -43,6 +43,39 @@ class TicketController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener el listado de facturas',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getPointsMonth(): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+            $currentMonth = now()->month;
+            $currentYear = now()->year;
+
+            $totalPoints = Ticket::whereYear('created_at', $currentYear)
+                ->whereMonth('created_at', $currentMonth)
+                ->sum('points_earned');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Puntos del mes recuperados con éxito',
+                'data' => [
+                    'user_id' => $user->id,
+                    'month' => $currentMonth,
+                    'year' => $currentYear,
+                    'total_points' => $totalPoints,
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error("Error al obtener puntos del mes para el usuario {$user->id}: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los puntos del mes',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -10,6 +10,9 @@ use App\Http\Requests\Admin\UpdateRewardRequest;
 use App\Models\Reward;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\JsonResponse;
+use Exception;
+
 
 class RewardController extends Controller
 {
@@ -196,6 +199,37 @@ class RewardController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al procesar la solicitud'
+            ], 500);
+        }
+    }
+
+    public function getTotalRewards(): JsonResponse
+    {
+        try {
+            $stats = Reward::selectRaw("
+                count(*) as total,
+                count(case when is_active = 1 then 1 end) as active,
+                count(case when is_active = 0 then 1 end) as inactive
+            ")->first();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'total_rewards' => (int) $stats->total,
+                    'active_rewards' => (int) $stats->active,
+                    'inactive_rewards' => (int) $stats->inactive,
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error('Error al obtener el desglose de recompensas:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Ocurrió un error al procesar las estadísticas de recompensas.'
             ], 500);
         }
     }

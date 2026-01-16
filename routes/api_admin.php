@@ -92,4 +92,23 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
     Route::get('transactions/getTotalTransacitonsByUser/{id}', [TransactionController::class, 'getTotalTransacitonsByUser'])
         ->name('yepez.transactions.getTotalTransacitonsByUser');
 
+
+
+    // Ruta para obtener el total de sucursales
+
+    Route::get('users/getTotalSucursales', [UserController::class, 'getTotalSucursales'])
+        ->name('yepez.users.getTotalSucursales');
+
+    // Ruta para obtener el total de recompensas
+    Route::get('reward/getTotalRewards', [RewardController::class, 'getTotalRewards'])
+        ->name('yepez.rewards.getTotalRewards');
+
+    // Ruta para obtener el total de redenciones pendientes
+    Route::get('redemptions/getTotalRedemptionsPending', [RedemptionController::class, 'getTotalRedemptionsPending'])
+        ->name('yepez.redemptions.getTotalRedemptionsPending');
+
+    // Ruta para obtener los puntos del mes
+    Route::get('tickets/getPointsMonth', [TicketController::class, 'getPointsMonth'])
+        ->name('yepez.tickets.getPointsMonth');
+
 });
