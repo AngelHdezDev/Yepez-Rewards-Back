@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// Importaciones necesarias
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,60 +10,74 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Casts\Attribute; // Para el Accessor/Mutator
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\DB;
 
-// Importamos los nuevos modelos para las relaciones
+// --- IMPORTACIONES PARA ACTIVITY LOG ---
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+// ---------------------------------------
+
 use App\Models\Transaction;
 use App\Models\Ticket;
 
-
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    // Añadimos LogsActivity a los traits existentes
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, LogsActivity;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'current_balance', // <-- Agregado para el campo de puntos
+        'current_balance',
         'branch_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     * * ¡CORREGIDO! SE ELIMINA LA DECLARACIÓN EXPLÍCITA DE TIPO (array) 
-     * para evitar el error: "Type of App\Models\User::$casts must not be defined"
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [ // <-- ¡SIN el "array" antes de $casts!
+    protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
 
+    // ===============================================
+    // CONFIGURACIÓN DE LOGS (SPATIE)
+    // ===============================================
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'email', 'current_balance', 'branch_id']) // Campos a vigilar
+            ->logOnlyDirty()                                            // Solo si hubo cambios reales
+            ->dontSubmitEmptyLogs()                                     // Evita filas vacías en la DB
+            ->useLogName('users');                                      // Etiqueta del log
+    }
+
+    /**
+     * Personaliza el mensaje del log (opcional)
+     */
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        $eventos = [
+            'created' => 'creado',
+            'updated' => 'actualizado',
+            'deleted' => 'eliminado',
+            'restored' => 'restaurado',
+        ];
+
+        // Buscamos la traducción o usamos el nombre original si no existe
+        $eventoTraducido = $eventos[$eventName] ?? $eventName;
+
+        return "El usuario ha sido {$eventoTraducido}";
+    }
     // ===============================================
     // RELACIONES
     // ===============================================
 
-    /**
-     * Obtiene todas las transacciones de puntos del usuario (CREDIT/DEBIT).
-     */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
@@ -74,32 +87,24 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return Attribute::make(
             get: fn() => $this->transactions()
-                ->where('status', 'COMPLETED') // Solo transacciones completadas
+                ->where('status', 'COMPLETED')
                 ->sum(DB::raw('CASE 
                                   WHEN type = "CREDIT" THEN amount 
                                   WHEN type = "DEBIT" THEN -amount 
                                   ELSE 0 
                               END')),
-        )->shouldCache(); // Recomiendo usar shouldCache() para evitar calcular el saldo en cada petición
+        )->shouldCache();
     }
 
-    /**
-     * Relación con los canjes de premios realizados por el usuario.
-     */
     public function redemptions()
     {
         return $this->hasMany(Redemption::class);
     }
 
-    /**
-     * Obtiene todos los tickets de compra registrados por la sucursal (si este User es una sucursal).
-     */
     public function registeredTickets(): HasMany
     {
-        // La llave foránea es branch_id
         return $this->hasMany(Ticket::class, 'branch_id');
     }
-
 
     public function branch(): BelongsTo
     {
@@ -110,15 +115,10 @@ class User extends Authenticatable implements MustVerifyEmail
     // ACCESORES
     // ===============================================
 
-    /**
-     * Accessor para el saldo de puntos (current_balance).
-     * Usamos Attribute::make para Laravel 10/11.
-     * Esto expone $user->balance
-     */
     protected function balance(): Attribute
     {
         return Attribute::make(
-            get: fn($value, $attributes) => (int) $attributes['current_balance'],
+            get: fn($value, $attributes) => (int) ($attributes['current_balance'] ?? 0),
             set: fn($value) => (int) $value,
         );
     }
