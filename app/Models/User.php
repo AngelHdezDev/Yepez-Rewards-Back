@@ -63,16 +63,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getDescriptionForEvent(string $eventName): string
     {
         $eventos = [
-            'created' => 'creado',
-            'updated' => 'actualizado',
-            'deleted' => 'eliminado',
-            'restored' => 'restaurado',
+            'created' => 'creada',
+            'updated' => 'actualizada',
+            'deleted' => 'eliminada',
+            'restored' => 'restaurada',
         ];
 
         // Buscamos la traducción o usamos el nombre original si no existe
         $eventoTraducido = $eventos[$eventName] ?? $eventName;
 
-        return "El usuario ha sido {$eventoTraducido}";
+        return "La sucursal {$this->name} ha sido {$eventoTraducido}";
     }
     // ===============================================
     // RELACIONES
