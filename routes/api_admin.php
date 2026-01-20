@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\RedemptionController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\TicketController;
+use App\Http\Controllers\Admin\ActivityLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -110,5 +111,8 @@ Route::middleware(['auth:sanctum', 'role:yepez'])->group(function () {
     // Ruta para obtener los puntos del mes
     Route::get('tickets/getPointsMonth', [TicketController::class, 'getPointsMonth'])
         ->name('yepez.tickets.getPointsMonth');
+
+    Route::get('logs/getLatestLogs', [ActivityLogController::class, 'getLatestLogs'])
+        ->name('yepez.logs.getLatestLogs');
 
 });
