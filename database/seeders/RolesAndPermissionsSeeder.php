@@ -87,6 +87,19 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
 
+        $yepezUser = User::firstOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('passwordAngel'),
+                'branch_id' => null,
+            ]
+        );
+        if (!$yepezUser->hasRole('yepez')) {
+            $yepezUser->assignRole('yepez');
+        }
+
+
         // ------------------------------------------------
         // 4. CUENTAS DE SUCURSAL (27 cuentas individuales)
         // ------------------------------------------------
