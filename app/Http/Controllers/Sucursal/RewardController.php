@@ -16,7 +16,7 @@ class RewardController extends Controller
     public function getTopRewards()
     {
         try {
-            $rewards = Reward::limit(10)->get();
+            $rewards = Reward::where('is_active', 1)->limit(10)->get();
             if ($rewards->isEmpty()) {
                 return response()->json([
                     'success' => true,
